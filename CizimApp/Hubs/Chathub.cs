@@ -100,6 +100,7 @@ namespace CizimApp.Hubs
                 }
                 else
                 {
+                    //test
                     room.roomAdmin = admin.Username;
                     await Clients.Client(admin.ConnectionId).SendAsync("AdminCall", true);
                     await _roomRepository.Update(room);
