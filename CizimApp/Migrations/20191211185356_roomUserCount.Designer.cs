@@ -4,14 +4,16 @@ using CizimApp.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CizimApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191211185356_roomUserCount")]
+    partial class roomUserCount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,9 +50,6 @@ namespace CizimApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ConnectedRoomName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ConnectionId")
                         .HasColumnType("nvarchar(max)");
 
@@ -73,12 +72,6 @@ namespace CizimApp.Migrations
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("roomAdmin")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("roomMaxUserCount")
-                        .HasColumnType("int");
 
                     b.Property<string>("roomName")
                         .HasColumnType("nvarchar(max)");

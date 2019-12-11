@@ -4,15 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CizimApp.Services
+namespace CizimApp.Repository
 {
-    public interface IUserService
+    public interface IConnectedUserRepository : IGenericRepository<ConnectedUser>
     {
-
-        bool Login(UserDTO user);
-        void Logout(UserDTO user);
-
-
-
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using CizimApp.Data;
 using CizimApp.Hubs;
 using CizimApp.Models;
-using CizimApp.Services;
+using CizimApp.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -51,20 +51,11 @@ namespace CizimApp
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            services.AddScoped(typeof(IGenericRepository<>), typeof(EfRepository<>));
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRoomRepository, RoomRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IConnectedUserRepository, ConnectedUserRepository>();
 
 
 

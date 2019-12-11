@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CizimApp.Models;
-using CizimApp.Services;
+using CizimApp.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,27 +15,29 @@ namespace CizimApp.Controllers
     public class UserController : ControllerBase
     {
 
-        //private readonly IUserService _userService;
-        //private readonly IConnectedUserService _connectedUserService;
+        private readonly IUserRepository _userRepository;
+        private readonly IConnectedUserRepository _connectedUserRepository;
+
         private readonly AppDbContext _context;
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, IConnectedUserRepository connectedUserRepository, IUserRepository userRepository)
         {
+            _connectedUserRepository = connectedUserRepository;
+            _userRepository = userRepository;
             _context = context;
-            //_userService = userService;
-            //_connectedUserService = connectedUserService;
+
         }
 
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] UserDTO user)
         {
-            //var data = _userService.Login(user);
-            var data = await _context.Users.FirstOrDefaultAsync(x => x.Username == user.Username && x.Password == user.Password);
-  
-            if(data != null)
+
+            var data = await _userRepository.Login(user);
+            if (data != null)
             {
-                return await Task.FromResult(Ok(new { 
-                  Username= data.Username
+                return await Task.FromResult(Ok(new
+                {
+                    Username = data.Username
                 }));
             }
 
@@ -46,17 +48,12 @@ namespace CizimApp.Controllers
         [HttpPost("connect")]
         public async Task<IActionResult> SaveToConnectedUser([FromBody] UserDTO user)
         {
-            var result = _context.ConnectedUsers.Add(new ConnectedUser
+            await _connectedUserRepository.Add(new ConnectedUser
             {
                 Username = user.Username,
                 ConnectionId = user.ConnectionId
 
             });
-            await _context.SaveChangesAsync();
-
-
-
-
 
             return await Task.FromResult(Ok());
 

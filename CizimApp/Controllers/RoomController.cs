@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Data.SqlClient;
 using CizimApp.Models;
 using Microsoft.EntityFrameworkCore;
+using CizimApp.Repository;
 
 namespace CizimApp.Controllers
 {
@@ -17,23 +18,45 @@ namespace CizimApp.Controllers
     public class RoomController : ControllerBase
     {
         private readonly IHubContext<Chathub> _hubContext;
-        private readonly AppDbContext _context;
-        public RoomController(IHubContext<Chathub> hubContext, AppDbContext context) 
+
+        private readonly IRoomRepository _roomRepository;
+        public RoomController(IHubContext<Chathub> hubContext, IRoomRepository roomRepository, AppDbContext context)
         {
+            _roomRepository = roomRepository;
             _hubContext = hubContext;
-            _context = context;
+
         }
 
         [HttpPost]
-        public async Task<IActionResult> Insert([FromBody] string roomName)
+        public async Task<IActionResult> Insert([FromBody] Room room)
         {
-            await _context.Rooms.AddAsync(new Room {roomName=roomName });
-            await _context.SaveChangesAsync();
-
-            var data = await _context.Rooms.AsNoTracking().ToListAsync();
+            room.Id = Guid.NewGuid();
+            await _roomRepository.Add(room);
+            var data = await _roomRepository.GetAll();
             await _hubContext.Clients.All.SendAsync("Notify", data);
 
-            return await Task.FromResult(Ok());
+            return await Task.FromResult(Ok(room));
+        }
+
+        [HttpPost("remove")]
+        public async Task<IActionResult> Remove([FromBody] Room room)
+        {
+            await _roomRepository.Remove(room);
+
+            var data = await _roomRepository.GetAll();
+            await _hubContext.Clients.All.SendAsync("Notify", data);
+            await _hubContext.Clients.Group(room.roomName).SendAsync("IsClosed", true);
+            return await Task.FromResult(Ok(true));
+        }
+        [HttpGet("{groupName}")]
+        public async Task<IActionResult> Get(string groupName)
+        {
+            var data = await _roomRepository.FirstOrDefault(x => x.roomName == groupName);
+            if (data != null)
+            {
+                return await Task.FromResult(Ok(true));
+            }
+            return await Task.FromResult(Ok(false));
         }
 
     }

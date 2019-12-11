@@ -11,7 +11,10 @@ namespace CizimApp.Models
        
         public Guid Id { get; set; }
         public string roomName { get; set; }
+        public int roomUserCount { get; set; }
+        public int roomMaxUserCount { get; set; }
 
+        public string roomAdmin { get; set; }
         public DateTime CreationDate { get; set; }
 
     }
