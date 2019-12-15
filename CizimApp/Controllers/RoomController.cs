@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using CizimApp.Repository;
 using CizimApp.Helpers;
 using Newtonsoft.Json;
+using System.Buffers.Text;
+
 namespace CizimApp.Controllers
 {
     [Route("api/[controller]")]
@@ -183,6 +185,8 @@ namespace CizimApp.Controllers
                 return await Task.FromResult(Ok(req));
             }
             return await Task.FromResult(Ok(false));
+
+
         }
 
         [HttpPost("kickvoteyes")]

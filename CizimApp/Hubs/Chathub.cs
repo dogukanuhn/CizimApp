@@ -34,6 +34,11 @@ namespace CizimApp.Hubs
             await base.OnConnectedAsync();
         }
 
+        public async Task SendCanvas(string imageBase64,string groupName)
+        {
+            await Clients.Group(groupName).SendAsync("GetCanvas", imageBase64);
+        }
+
         public async Task GetAllChatMessage(string groupName)
         {
             //var data = await _context.Chats.AsNoTracking().Where(x => x.RoomName == groupName).ToArrayAsync();
