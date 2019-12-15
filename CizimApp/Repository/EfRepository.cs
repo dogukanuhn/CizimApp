@@ -52,18 +52,18 @@ namespace CizimApp.Repository
 
         public async Task<IEnumerable<T>> GetAll()
         {
-            return await Context.Set<T>().ToListAsync();
+            return await Context.Set<T>().AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<T>> GetWhere(Expression<Func<T, bool>> predicate)
         {
-            return await Context.Set<T>().Where(predicate).ToListAsync();
+            return await Context.Set<T>().Where(predicate).AsNoTracking().ToListAsync();
         }
 
-        public Task<int> CountAll() => Context.Set<T>().CountAsync();
+        public Task<int> CountAll() => Context.Set<T>().AsNoTracking().CountAsync();
 
         public Task<int> CountWhere(Expression<Func<T, bool>> predicate)
-            => Context.Set<T>().CountAsync(predicate);
+            => Context.Set<T>().AsNoTracking().CountAsync(predicate);
 
         #endregion
 

@@ -63,9 +63,13 @@ namespace CizimApp.Hubs
             await Clients.Group(groupName).SendAsync("GroupMessage", data);
 
         }
-        public async Task GetConnecionId()
+        public async Task<string> GetConnecionId()
         {
-            await Clients.Client(Context.ConnectionId).SendAsync("SetConnectionId", Context.ConnectionId);
+
+            return await Task.FromResult(Context.ConnectionId);
+
+
+            //await Clients.Client(Context.ConnectionId).SendAsync("SetConnectionId", Context.ConnectionId);
         }
 
         public async Task AddToGroup(string groupName)

@@ -124,8 +124,8 @@ namespace CizimApp.Controllers
                 var admin = await _connectedUserRepository.FirstOrDefault(x => x.ConnectedRoomName == room.roomName);
                 if (admin == null)
                 {
-                    await _hubContext.Clients.Group(lab.ConnectedRoomName).SendAsync("IsClosed", true);
-
+                    await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("IsClosed", true);
+                    await _roomRepository.Remove(room);
                 }
                 else
                 {
@@ -137,8 +137,8 @@ namespace CizimApp.Controllers
             }
 
 
-            await _hubContext.Groups.RemoveFromGroupAsync(lab.ConnectionId, lab.ConnectedRoomName);
-            await _hubContext.Clients.Group(lab.ConnectedRoomName).SendAsync("GroupLeaved", $"{lab.Username} has left the group.");
+            await _hubContext.Groups.RemoveFromGroupAsync(user.ConnectionId, user.ConnectedRoomName);
+            await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("GroupLeaved", $"{lab.Username} has left the group.");
             var data = await _roomRepository.GetAll();
             await _hubContext.Clients.All.SendAsync("Notify", data);
             return await Task.FromResult(Ok());
