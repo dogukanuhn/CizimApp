@@ -48,12 +48,22 @@ namespace CizimApp.Controllers
         [HttpPost("connect")]
         public async Task<IActionResult> SaveToConnectedUser([FromBody] UserDTO user)
         {
-            await _connectedUserRepository.Add(new ConnectedUser
+           
+            var data = await _connectedUserRepository.FirstOrDefault(x => x.Username == user.Username);
+            if (data != null)
             {
-                Username = user.Username,
-                ConnectionId = user.ConnectionId
+                data.ConnectionId = user.ConnectionId;
+                await _connectedUserRepository.Update(data);
+            }
+            else
+            {
+                await _connectedUserRepository.Add(new ConnectedUser
+                {
+                    Username = user.Username,
+                    ConnectionId = user.ConnectionId
 
-            });
+                });
+            }
 
             return await Task.FromResult(Ok());
 

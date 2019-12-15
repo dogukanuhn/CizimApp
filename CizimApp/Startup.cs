@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CizimApp.Data;
+using CizimApp.Helpers;
 using CizimApp.Hubs;
 using CizimApp.Models;
 using CizimApp.Repository;
@@ -32,6 +33,7 @@ namespace CizimApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddHostedService<KickCheckWork.Worker>();
 
             services.AddControllers();
             services.AddSignalR(o => {
@@ -51,11 +53,14 @@ namespace CizimApp
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
+
             services.AddScoped(typeof(IGenericRepository<>), typeof(EfRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IConnectedUserRepository, ConnectedUserRepository>();
+            services.AddScoped<IRedisHandler, RedisHandler>();
+
 
 
 
