@@ -1,10 +1,11 @@
-﻿using CizimApp.Models;
+﻿
+using CizimAppEntity.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CizimApp.Repository
+namespace CizimAppData.Repository
 {
     public class ConnectedUserRepository : EfRepository<ConnectedUser>,IConnectedUserRepository
     {

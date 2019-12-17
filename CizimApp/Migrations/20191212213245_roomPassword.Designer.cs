@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CizimApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20191211190915_roomMaxUserCount")]
-    partial class roomMaxUserCount
+    [Migration("20191212213245_roomPassword")]
+    partial class roomPassword
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,6 +50,9 @@ namespace CizimApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ConnectedRoomName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConnectionId")
                         .HasColumnType("nvarchar(max)");
 
@@ -73,10 +76,16 @@ namespace CizimApp.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("roomAdmin")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("roomMaxUserCount")
                         .HasColumnType("int");
 
                     b.Property<string>("roomName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("roomPassword")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("roomUserCount")

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Design;
-namespace CizimApp.Models
+namespace CizimAppEntity.Models
 {
     public class AppDbContext : DbContext
     {

@@ -1,10 +1,11 @@
-﻿using CizimApp.Data;
+﻿
+using CizimAppData.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CizimApp.Models
+namespace CizimAppEntity.Models
 {
     public class User:IEntity
     {

@@ -1,10 +1,11 @@
-﻿using CizimApp.Data;
+﻿
+using CizimAppData.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CizimApp.Models
+namespace CizimAppEntity.Models
 {
     public class Room : IEntity
     {
@@ -13,7 +14,7 @@ namespace CizimApp.Models
         public string roomName { get; set; }
         public int roomUserCount { get; set; }
         public int roomMaxUserCount { get; set; }
-
+        public string roomPassword { get; set; }
         public string roomAdmin { get; set; }
         public DateTime CreationDate { get; set; }
 
