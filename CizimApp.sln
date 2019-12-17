@@ -5,7 +5,11 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CizimApp", "CizimApp\CizimApp.csproj", "{FC5595BF-B719-4C06-86F3-A3CA05EDB383}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KickCheckWork", "KickCheckWork\KickCheckWork.csproj", "{D288A113-3C37-4B59-841F-543A5F80223A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KickCheckWork", "KickCheckWork\KickCheckWork.csproj", "{D288A113-3C37-4B59-841F-543A5F80223A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CizimAppData", "CizimAppData\CizimAppData.csproj", "{E396789C-1B3B-403C-A979-8FD6A4C29CC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CizimAppEntity", "CizimAppEntity\CizimAppEntity.csproj", "{CF669A41-6B8F-4462-AC33-52F2A697F69F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{D288A113-3C37-4B59-841F-543A5F80223A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D288A113-3C37-4B59-841F-543A5F80223A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D288A113-3C37-4B59-841F-543A5F80223A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E396789C-1B3B-403C-A979-8FD6A4C29CC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E396789C-1B3B-403C-A979-8FD6A4C29CC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E396789C-1B3B-403C-A979-8FD6A4C29CC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E396789C-1B3B-403C-A979-8FD6A4C29CC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF669A41-6B8F-4462-AC33-52F2A697F69F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF669A41-6B8F-4462-AC33-52F2A697F69F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF669A41-6B8F-4462-AC33-52F2A697F69F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF669A41-6B8F-4462-AC33-52F2A697F69F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

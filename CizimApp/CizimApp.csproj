@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\**" />
+    <Content Remove="Services\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <None Remove="Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Migrations\20191211185322_roomUserCount.cs" />
     <Compile Remove="Migrations\20191211185322_roomUserCount.Designer.cs" />
     <Compile Remove="Migrations\20191212215905_roomPassword_change.cs" />
@@ -25,10 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\CizimAppData\CizimAppData.csproj" />
+    <ProjectReference Include="..\CizimAppEntity\CizimAppEntity.csproj" />
     <ProjectReference Include="..\KickCheckWork\KickCheckWork.csproj" />
   </ItemGroup>
 

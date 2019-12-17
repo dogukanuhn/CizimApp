@@ -1,11 +1,12 @@
-﻿using CizimApp.Data;
+﻿
+using CizimAppData.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace CizimApp.Repository
+namespace CizimAppData.Repository
 {
     public interface IGenericRepository<T> where T : class, IEntity
     {

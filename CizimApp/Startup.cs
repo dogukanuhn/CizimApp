@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using CizimApp.Data;
 using CizimApp.Helpers;
 using CizimApp.Hubs;
-using CizimApp.Models;
-using CizimApp.Repository;
+
+using CizimAppData.Repository;
+using CizimAppEntity.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;

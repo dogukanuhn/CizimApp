@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CizimApp.Models
+namespace CizimAppEntity.Models
 {
     public class RoomVote
     {

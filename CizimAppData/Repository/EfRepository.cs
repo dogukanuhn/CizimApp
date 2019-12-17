@@ -1,5 +1,6 @@
-﻿using CizimApp.Data;
-using CizimApp.Models;
+﻿
+using CizimAppData.Data;
+using CizimAppEntity.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace CizimApp.Repository
+namespace CizimAppData.Repository
 {
     public class EfRepository<T> : IGenericRepository<T> where T : class, IEntity
     {

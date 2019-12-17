@@ -1,5 +1,6 @@
-﻿using CizimApp.Models;
-using CizimApp.Repository;
+﻿
+using CizimAppData.Repository;
+using CizimAppEntity.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -65,71 +66,10 @@ namespace CizimApp.Hubs
         }
         public async Task<string> GetConnecionId()
         {
-
             return await Task.FromResult(Context.ConnectionId);
-
-
-            //await Clients.Client(Context.ConnectionId).SendAsync("SetConnectionId", Context.ConnectionId);
         }
 
-        public async Task AddToGroup(string groupName)
-        {
-            //var room = await _roomRepository.FirstOrDefault(x => x.roomName == groupName);
-            //if (room != null)
-            //{
-            //    room.roomUserCount += 1;
-            //    await _roomRepository.Update(room);
 
-
-            //    var data = await _roomRepository.GetAll();
-            //    await Clients.All.SendAsync("Notify", data);
-
-
-            //    var user =  _connectedUserRepository.FirstOrDefault(x => x.ConnectionId == Context.ConnectionId);
-
-            //    user.Result.ConnectedRoomName = groupName;
-            //    _connectedUserRepository.Update(user.Result);
-
-            //    await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-
-            //    await Clients.Group(groupName).SendAsync("GroupJoined", $"{Context.ConnectionId}-{user.Result.Username} has joined the group.");
-            //}
-        }
-
-        public async Task RemoveFromGroup(string groupName)
-        {
-            
-            //var room = await _roomRepository.FirstOrDefault(x => x.roomName == groupName);
-            //room.roomUserCount-=1;
-
-            //var user = await _connectedUserRepository.FirstOrDefault(x => x.ConnectionId == Context.ConnectionId);
-            //user.ConnectedRoomName = null;
-            //await _connectedUserRepository.Update(user);
-            //if (room.roomAdmin == user.Username)
-            //{
-            //    var admin = await _connectedUserRepository.FirstOrDefault(x => x.ConnectedRoomName == room.roomName);
-            //    if (admin == null)
-            //    {
-            //        await Clients.Group(groupName).SendAsync("IsClosed", true);
-            
-            //    }
-            //    else
-            //    {
-            //        //test
-            //        room.roomAdmin = admin.Username;
-            //        await Clients.Client(admin.ConnectionId).SendAsync("AdminCall", true);
-            //        await _roomRepository.Update(room);
-            //    }
-            //}
-
-
-            //await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-            //await Clients.Group(groupName).SendAsync("GroupLeaved", $"{Context.ConnectionId}-{user.Username} has left the group {groupName}.");
-            //var data = await _roomRepository.GetAll();
-            //await Clients.All.SendAsync("Notify", data);
-
-
-        }
 
     }
 }
