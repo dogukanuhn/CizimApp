@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Design;
-namespace CizimAppEntity.Models
+using CizimAppEntity.Models;
+
+namespace CizimAppData
 {
     public class AppDbContext : DbContext
     {
@@ -17,6 +19,8 @@ namespace CizimAppEntity.Models
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Word> Words { get; set; }
+
         public DbSet<ConnectedUser> ConnectedUsers { get; set; }
     }
 }

@@ -23,5 +23,8 @@ namespace CizimAppData.Repository
         Task<int> CountAll();
         Task<int> CountWhere(Expression<Func<T, bool>> predicate);
 
+        Task AddRange(List<T> entity);
+        Task RemoveRange(List<T> entity);
+
     }
 }

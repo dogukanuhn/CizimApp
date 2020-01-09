@@ -22,11 +22,12 @@ namespace CizimAppData.Repository
         public EfRepository(AppDbContext context)
         {
             Context = context;
+           
         }
 
         #region Public Methods
 
-
+        
         public Task<T> FirstOrDefault(Expression<Func<T, bool>> predicate)
             => Context.Set<T>().FirstOrDefaultAsync(predicate);
 
@@ -65,6 +66,17 @@ namespace CizimAppData.Repository
 
         public Task<int> CountWhere(Expression<Func<T, bool>> predicate)
             => Context.Set<T>().AsNoTracking().CountAsync(predicate);
+
+        public async Task AddRange(List<T> entity)
+        {
+            await Context.Set<T>().AddRangeAsync(entity);
+            await Context.SaveChangesAsync();
+        }
+        public async Task RemoveRange(List<T> entity)
+        {
+            Context.Set<T>().RemoveRange(entity);
+            await Context.SaveChangesAsync();
+        }
 
         #endregion
 

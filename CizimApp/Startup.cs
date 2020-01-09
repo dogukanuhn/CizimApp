@@ -1,24 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CizimApp.Data;
-using CizimApp.Helpers;
-using CizimApp.Hubs;
 
+using CizimApp.Hubs;
+using CizimAppData;
+using CizimAppData.Helpers;
 using CizimAppData.Repository;
 using CizimAppEntity.Models;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors.Infrastructure;
+
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+
 
 namespace CizimApp
 {
@@ -34,7 +28,8 @@ namespace CizimApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddHostedService<KickCheckWork.Worker>();
+            services.AddHostedService<RoomWorker.Worker>();
+            services.AddHostedService<ConnectedUserWorker.Worker>();
 
             services.AddControllers();
             services.AddSignalR(o => {
@@ -52,9 +47,9 @@ namespace CizimApp
             });
             services.AddDbContext<AppDbContext>(opt =>
             {
-                opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("CizimApp"));
             });
-
+       
             services.AddScoped(typeof(IGenericRepository<>), typeof(EfRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();

@@ -6,11 +6,12 @@ using CizimApp.Hubs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using CizimApp.Helpers;
 using Newtonsoft.Json;
 using CizimAppEntity;
 using CizimAppEntity.Models;
 using CizimAppData.Repository;
+using CizimAppData.Helpers;
+using CizimAppData;
 
 namespace CizimApp.Controllers
 {
@@ -40,17 +41,12 @@ namespace CizimApp.Controllers
             if (await _redisHandler.IsCached("Room:Rooms"))
             {
                 rooms = JsonConvert.DeserializeObject<List<Room>>(await _redisHandler.GetFromCache("Room:Rooms"));
-                rooms.Add(room);
-
-                return await Task.FromResult(Ok(room));
 
             }
-            else
-            {
-                rooms.Add(room);
-                await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(1), JsonConvert.SerializeObject(rooms));
-            }
-
+           
+            rooms.Add(room);
+            await _redisHandler.RemoveFromCache("Room:Rooms");
+            await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(rooms));
             await _hubContext.Clients.All.SendAsync("Notify", rooms);
             return await Task.FromResult(Ok(room));
         }
@@ -61,7 +57,7 @@ namespace CizimApp.Controllers
             var data = JsonConvert.DeserializeObject<List<Room>>(await _redisHandler.GetFromCache("Room:Rooms"));
             data.Remove(room);
             await _redisHandler.RemoveFromCache("Room:Rooms");
-            await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(1), JsonConvert.SerializeObject(data));
+            await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(data));
             await _hubContext.Clients.All.SendAsync("Notify", data);
 
             await _hubContext.Clients.Group(room.roomName).SendAsync("IsClosed", true);
@@ -233,6 +229,7 @@ namespace CizimApp.Controllers
                         {
                             await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("IsClosed", true);
                             rooms.Remove(room);
+                            await _roomRepository.Remove(room);
                         }
                         else
                         {
@@ -247,7 +244,7 @@ namespace CizimApp.Controllers
                 await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUserList));
 
                 await _redisHandler.RemoveFromCache("Room:Rooms");
-                await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(5), JsonConvert.SerializeObject(rooms));
+                await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(rooms));
 
                 await _hubContext.Groups.RemoveFromGroupAsync(user.ConnectionId, user.ConnectedRoomName);
                 await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("GroupLeaved", $"{lab.Username} has left the group.");
