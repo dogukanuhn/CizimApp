@@ -1,4 +1,5 @@
 ﻿
+using CizimAppData;
 using CizimAppData.Repository;
 using CizimAppEntity.Models;
 using Microsoft.AspNetCore.SignalR;

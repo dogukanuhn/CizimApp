@@ -34,7 +34,8 @@
   <ItemGroup>
     <ProjectReference Include="..\CizimAppData\CizimAppData.csproj" />
     <ProjectReference Include="..\CizimAppEntity\CizimAppEntity.csproj" />
-    <ProjectReference Include="..\KickCheckWork\KickCheckWork.csproj" />
+    <ProjectReference Include="..\ConnectedUserWorker\ConnectedUserWorker.csproj" />
+    <ProjectReference Include="..\KickCheckWork\RoomWorker.csproj" />
   </ItemGroup>
 
 
