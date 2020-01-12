@@ -84,7 +84,7 @@ namespace ConnectedUserWorker
 
 
                 _logger.LogInformation("Connected User Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(10000, stoppingToken);
+                await Task.Delay(150000, stoppingToken);
             }
         }
     }

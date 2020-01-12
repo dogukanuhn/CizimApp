@@ -1,9 +1,11 @@
 ﻿
 using CizimAppData;
+using CizimAppData.Helpers;
 using CizimAppData.Repository;
 using CizimAppEntity.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,21 +19,29 @@ namespace CizimApp.Hubs
         private readonly IRoomRepository _roomRepository;
         private readonly IChatRepository _chatRepository;
         private readonly IConnectedUserRepository _connectedUserRepository;
+        private readonly IRedisHandler _redisHandler;
 
 
-        public Chathub(AppDbContext context, IConnectedUserRepository connectedUserRepository, IChatRepository chatRepository,IRoomRepository roomRepository)
+        public Chathub(IRedisHandler redisHandler, IConnectedUserRepository connectedUserRepository, IChatRepository chatRepository,IRoomRepository roomRepository)
         {
             _connectedUserRepository = connectedUserRepository;
             _chatRepository = chatRepository;
             _roomRepository = roomRepository;
-            _context = context;
+            _redisHandler = redisHandler;
         }
 
         public override async Task OnConnectedAsync()
         {
             await Clients.Client(Context.ConnectionId).SendAsync("SetConnectionId", Context.ConnectionId);
-            var data = await _roomRepository.GetAll();
-            //var data = await _context.Rooms.AsNoTracking().ToListAsync();
+            IEnumerable<Room> data = new List<Room>(); 
+            if (await _redisHandler.IsCached("Room:Rooms"))
+            {
+                data = JsonConvert.DeserializeObject<List<Room>>(await _redisHandler.GetFromCache("Room:Rooms"));
+            }
+            else
+            {
+                data = await _roomRepository.GetAll();
+            }
             await Clients.All.SendAsync("Notify", data);
             await base.OnConnectedAsync();
         }

@@ -85,7 +85,7 @@ namespace RoomWorker
                 }
 
                 _logger.LogInformation("Room Worker: {time}", DateTimeOffset.Now);
-                await Task.Delay(10000, stoppingToken);
+                await Task.Delay(150000, stoppingToken);
             }
         }
     }

@@ -119,7 +119,10 @@ namespace CizimApp.Controllers
                     {
                         var connectedUsers = JsonConvert.DeserializeObject<List<ConnectedUser>>(await _redisHandler.GetFromCache("Userlist:ConnectedUser"));
                         lab = connectedUsers.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
-                        lab.ConnectedRoomName = user.ConnectedRoomName;
+                        if (user.ConnectedRoomName != null)
+                        {
+                            lab.ConnectedRoomName = user.ConnectedRoomName;
+                        }
                         await _redisHandler.RemoveFromCache("Userlist:ConnectedUser");
                         await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUsers));
                     }
@@ -127,7 +130,11 @@ namespace CizimApp.Controllers
                     {
                         var connectedUsers = await _connectedUserRepository.GetAll();
                         lab = connectedUsers.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
-                        lab.ConnectedRoomName = user.ConnectedRoomName;
+
+                        if (user.ConnectedRoomName != null)
+                        {
+                            lab.ConnectedRoomName = user.ConnectedRoomName;
+                        }
                         await _connectedUserRepository.Update(lab);
                         await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUsers));
 
@@ -229,7 +236,10 @@ namespace CizimApp.Controllers
                         {
                             await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("IsClosed", true);
                             rooms.Remove(room);
-                            await _roomRepository.Remove(room);
+                            if (await _roomRepository.CountWhere(x=> x.roomName == room.roomName) > 0)
+                            {
+                                await _roomRepository.Remove(room);
+                            }
                         }
                         else
                         {
