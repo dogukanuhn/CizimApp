@@ -67,11 +67,13 @@ namespace CizimApp.Hubs
                 Message = message,
                 RoomName = groupName,
                 Username = username
-
             };
             await _chatRepository.Add(data);
-            //await _context.Chats.AddAsync(data);
-
+            var gameRoom = JsonConvert.DeserializeObject<StartedGame>(await _redisHandler.GetFromCache($"Room:StartedGame:{groupName}"));
+            if (gameRoom.word.WordName == message)
+            {
+                data.Answer = true;
+            }
             await Clients.Group(groupName).SendAsync("GroupMessage", data);
 
         }

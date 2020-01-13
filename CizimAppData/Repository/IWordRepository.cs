@@ -1,10 +1,12 @@
-﻿using System;
+﻿using CizimAppEntity.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CizimAppData.Repository
 {
-    interface IWordRepository
+    public interface IWordRepository : IGenericRepository<Word>
     {
+
     }
 }

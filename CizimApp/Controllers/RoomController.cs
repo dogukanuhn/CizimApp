@@ -20,12 +20,13 @@ namespace CizimApp.Controllers
     public class RoomController : ControllerBase
     {
         private readonly IHubContext<Chathub> _hubContext;
-
+        private readonly IWordRepository _wordRepository;
         private readonly IRoomRepository _roomRepository;
         private readonly IConnectedUserRepository _connectedUserRepository;
         private readonly IRedisHandler _redisHandler;
-        public RoomController(IRedisHandler redisHandler, IConnectedUserRepository connectedUserRepository, IHubContext<Chathub> hubContext, IRoomRepository roomRepository, AppDbContext context)
+        public RoomController(IWordRepository wordRepository, IRedisHandler redisHandler, IConnectedUserRepository connectedUserRepository, IHubContext<Chathub> hubContext, IRoomRepository roomRepository, AppDbContext context)
         {
+            _wordRepository = wordRepository;
             _redisHandler = redisHandler;
             _roomRepository = roomRepository;
             _hubContext = hubContext;
@@ -43,7 +44,7 @@ namespace CizimApp.Controllers
                 rooms = JsonConvert.DeserializeObject<List<Room>>(await _redisHandler.GetFromCache("Room:Rooms"));
 
             }
-           
+
             rooms.Add(room);
             await _redisHandler.RemoveFromCache("Room:Rooms");
             await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(rooms));
@@ -111,7 +112,7 @@ namespace CizimApp.Controllers
                 {
                     room.roomUserCount += 1;
 
-                    
+
 
                     ConnectedUser lab = new ConnectedUser();
 
@@ -146,6 +147,14 @@ namespace CizimApp.Controllers
                     await _hubContext.Groups.AddToGroupAsync(lab.ConnectionId, lab.ConnectedRoomName);
                     await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("GroupJoined", $"{lab.Username} has joined the group.");
                     await _hubContext.Clients.All.SendAsync("Notify", rooms);
+
+
+                    if (room.roomUserCount == 3)
+                    {
+                        await _hubContext.Clients.Group(room.roomName).SendAsync("StartGameTimer", true);
+                    }
+
+
                     return await Task.FromResult(Ok(true));
                 }
             }
@@ -159,7 +168,7 @@ namespace CizimApp.Controllers
 
 
                     var data = await _roomRepository.GetAll();
-                    
+
 
                     ConnectedUser lab = new ConnectedUser();
 
@@ -188,6 +197,13 @@ namespace CizimApp.Controllers
 
                     await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("GroupJoined", $"{lab.Username} has joined the group.");
                     await _hubContext.Clients.All.SendAsync("Notify", data);
+
+
+                    if (room.roomUserCount == 3)
+                    {
+                        await _hubContext.Clients.Group(room.roomName).SendAsync("StartGameTimer", true);
+                    }
+
                     return await Task.FromResult(Ok(true));
 
                 }
@@ -221,11 +237,11 @@ namespace CizimApp.Controllers
                     lab = connectedUserList.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
                     lab.ConnectedRoomName = null;
                     await _connectedUserRepository.Update(lab);
-                    
+
 
                 }
 
-    
+
                 if (room != null)
                 {
                     room.roomUserCount -= 1;
@@ -236,7 +252,7 @@ namespace CizimApp.Controllers
                         {
                             await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("IsClosed", true);
                             rooms.Remove(room);
-                            if (await _roomRepository.CountWhere(x=> x.roomName == room.roomName) > 0)
+                            if (await _roomRepository.CountWhere(x => x.roomName == room.roomName) > 0)
                             {
                                 await _roomRepository.Remove(room);
                             }
@@ -246,7 +262,7 @@ namespace CizimApp.Controllers
                             //test
                             room.roomAdmin = admin.Username;
                             await _hubContext.Clients.Client(admin.ConnectionId).SendAsync("AdminCall", true);
-                            
+
                         }
                     }
                 }
@@ -258,7 +274,12 @@ namespace CizimApp.Controllers
 
                 await _hubContext.Groups.RemoveFromGroupAsync(user.ConnectionId, user.ConnectedRoomName);
                 await _hubContext.Clients.Group(user.ConnectedRoomName).SendAsync("GroupLeaved", $"{lab.Username} has left the group.");
-                
+
+
+                if (room.roomUserCount < 3)
+                {
+                    await _hubContext.Clients.Group(room.roomName).SendAsync("StartGameTimer", false);
+                }
 
                 await _hubContext.Clients.All.SendAsync("Notify", rooms);
                 return await Task.FromResult(Ok());
@@ -443,6 +464,71 @@ namespace CizimApp.Controllers
             return await Task.FromResult(Ok(false));
         }
 
+
+
+        [HttpPost("startgame")]
+        public async Task<IActionResult> StartGame(Room room)
+        {
+            var wordCount = await _wordRepository.CountAll();
+            Random rnd = new Random();
+            var randomWord = rnd.Next(0, wordCount);
+            var data = await _wordRepository.GetAll();
+            var word = data.ToList()[randomWord];
+
+            var roomPlayerList = JsonConvert.DeserializeObject<List<ConnectedUser>>(await _redisHandler.GetFromCache("Userlist:ConnectedUser")).Where(x => x.ConnectedRoomName == room.roomName).ToList();
+            var shuffledList = ShuffleList(roomPlayerList);
+
+            await _redisHandler.AddToCache($"Room:StartedGame:{room.roomName}", TimeSpan.FromMinutes(10), JsonConvert.SerializeObject(new StartedGame
+            {
+                word = word,
+                userList = shuffledList,
+                point = 120,
+                turn = 1
+            }));
+
+            await _hubContext.Clients.Client(shuffledList[0].ConnectionId).SendAsync("YourTurn", true);
+            await _hubContext.Clients.Group(room.roomName).SendAsync("StartTurnTimer", true);
+
+            return await Task.FromResult(Ok(word));
+        }
+        [HttpPost("nextturn")]
+        public async Task<IActionResult> NextTurn(Room room)
+        {
+            var data = JsonConvert.DeserializeObject<StartedGame>(await _redisHandler.GetFromCache($"Room:StartedGame:{room.roomName}"));
+            var psuedoPlayer = data.userList[0];
+
+            data.userList.RemoveAt(0);
+            data.userList.Add(psuedoPlayer);
+            data.turn += 1;
+
+            await _hubContext.Clients.Client(psuedoPlayer.ConnectionId).SendAsync("YourTurn", false);
+            await _hubContext.Clients.Client(data.userList[0].ConnectionId).SendAsync("YourTurn", true);
+            await _hubContext.Clients.Group(room.roomName).SendAsync("StartTurnTimer", true);
+
+
+            await _redisHandler.RemoveFromCache($"Room:StartedGame:{room.roomName}");
+ 
+            await _redisHandler.AddToCache($"Room:StartedGame:{room.roomName}", TimeSpan.FromMinutes(10), JsonConvert.SerializeObject(data));
+
+            return await Task.FromResult(Ok(data.userList[0]));
+        }
+
+
+        private List<E> ShuffleList<E>(List<E> inputList)
+        {
+            List<E> randomList = new List<E>();
+
+            Random r = new Random();
+            int randomIndex = 0;
+            while (inputList.Count > 0)
+            {
+                randomIndex = r.Next(0, inputList.Count); //Choose a random object in the list
+                randomList.Add(inputList[randomIndex]); //add it to the new, random list
+                inputList.RemoveAt(randomIndex); //remove to avoid duplicates
+            }
+
+            return randomList; //return the new random list
+        }
 
     }
 }

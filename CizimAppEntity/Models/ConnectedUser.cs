@@ -13,6 +13,7 @@ namespace CizimAppEntity.Models
         public string Username { get; set; }
         public string ConnectionId { get; set; }
         public string ConnectedRoomName { get; set; }
+        public int GamePoint { get; set; }
         public DateTime ConnectionTime { get; set; }
     }
 }
