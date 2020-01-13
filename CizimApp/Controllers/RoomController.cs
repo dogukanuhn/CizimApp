@@ -178,6 +178,7 @@ namespace CizimApp.Controllers
                         lab = connectedUsers.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
                         lab.ConnectedRoomName = user.ConnectedRoomName;
                         await _redisHandler.RemoveFromCache("Userlist:ConnectedUser");
+               
                         await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUsers));
                     }
                     else
@@ -187,7 +188,7 @@ namespace CizimApp.Controllers
                         lab.ConnectedRoomName = user.ConnectedRoomName;
                         await _connectedUserRepository.Update(lab);
                         await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUsers));
-
+                        
                     }
 
 
@@ -229,6 +230,8 @@ namespace CizimApp.Controllers
                     lab = connectedUserList.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
                     lab.ConnectedRoomName = null;
                     await _redisHandler.RemoveFromCache("Userlist:ConnectedUser");
+                    await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUserList));
+                
                 }
                 else
                 {
@@ -237,6 +240,7 @@ namespace CizimApp.Controllers
                     lab = connectedUserList.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
                     lab.ConnectedRoomName = null;
                     await _connectedUserRepository.Update(lab);
+                   
 
 
                 }
@@ -266,8 +270,8 @@ namespace CizimApp.Controllers
                         }
                     }
                 }
-                await _redisHandler.RemoveFromCache("Userlist:ConnectedUser");
-                await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUserList));
+             
+                
 
                 await _redisHandler.RemoveFromCache("Room:Rooms");
                 await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(rooms));
@@ -296,6 +300,8 @@ namespace CizimApp.Controllers
                     lab = connectedUserList.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
                     lab.ConnectedRoomName = null;
                     await _redisHandler.RemoveFromCache("Userlist:ConnectedUser");
+                    await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUserList));
+         
                 }
                 else
                 {
@@ -304,6 +310,7 @@ namespace CizimApp.Controllers
                     lab = connectedUserList.FirstOrDefault(x => x.ConnectionId == user.ConnectionId);
                     lab.ConnectedRoomName = null;
                     await _connectedUserRepository.Update(lab);
+
 
 
                 }
@@ -329,8 +336,8 @@ namespace CizimApp.Controllers
                     }
                 }
 
-                await _redisHandler.RemoveFromCache("Userlist:ConnectedUser");
-                await _redisHandler.AddToCache("Userlist:ConnectedUser", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(connectedUserList));
+
+      
 
                 await _redisHandler.RemoveFromCache("Room:Rooms");
                 await _redisHandler.AddToCache("Room:Rooms", TimeSpan.FromMinutes(2), JsonConvert.SerializeObject(await _roomRepository.GetAll()));
@@ -485,11 +492,11 @@ namespace CizimApp.Controllers
                 point = 120,
                 turn = 1
             }));
-
+            await _hubContext.Clients.Group(room.roomName).SendAsync("GameTurn", new { wordName = word.WordName,turn=1});
             await _hubContext.Clients.Client(shuffledList[0].ConnectionId).SendAsync("YourTurn", true);
             await _hubContext.Clients.Group(room.roomName).SendAsync("StartTurnTimer", true);
 
-            return await Task.FromResult(Ok(word));
+            return await Task.FromResult(Ok());
         }
         [HttpPost("nextturn")]
         public async Task<IActionResult> NextTurn(Room room)
@@ -501,14 +508,22 @@ namespace CizimApp.Controllers
             data.userList.Add(psuedoPlayer);
             data.turn += 1;
 
+            var wordCount = await _wordRepository.CountAll();
+            Random rnd = new Random();
+            var randomWord = rnd.Next(0, wordCount);
+            var wordList = await _wordRepository.GetAll();
+            var word = wordList.ToList()[randomWord];
+            data.word = word;
+            await _hubContext.Clients.Group(room.roomName).SendAsync("GameTurn", new { wordName = word.WordName, turn = data.turn });
             await _hubContext.Clients.Client(psuedoPlayer.ConnectionId).SendAsync("YourTurn", false);
             await _hubContext.Clients.Client(data.userList[0].ConnectionId).SendAsync("YourTurn", true);
             await _hubContext.Clients.Group(room.roomName).SendAsync("StartTurnTimer", true);
 
 
             await _redisHandler.RemoveFromCache($"Room:StartedGame:{room.roomName}");
- 
+
             await _redisHandler.AddToCache($"Room:StartedGame:{room.roomName}", TimeSpan.FromMinutes(10), JsonConvert.SerializeObject(data));
+            await _hubContext.Clients.Group(room.roomName).SendAsync("DisableChat", false);
 
             return await Task.FromResult(Ok(data.userList[0]));
         }

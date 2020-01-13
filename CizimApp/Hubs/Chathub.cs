@@ -58,9 +58,10 @@ namespace CizimApp.Hubs
             await Clients.Group(groupName).SendAsync("RoomMessage", data);
         }
 
-       
 
-        public async Task SendMessageToGroup(string groupName, string message,string username)
+
+
+        public async Task SendMessageToGroup(string groupName, string message,string username,string conId)
         {
             var data = new Chat
             {
@@ -68,15 +69,48 @@ namespace CizimApp.Hubs
                 RoomName = groupName,
                 Username = username
             };
-            await _chatRepository.Add(data);
-            var gameRoom = JsonConvert.DeserializeObject<StartedGame>(await _redisHandler.GetFromCache($"Room:StartedGame:{groupName}"));
-            if (gameRoom.word.WordName == message)
+
+            if (await _redisHandler.IsCached($"Room:StartedGame:{groupName}"))
             {
-                data.Answer = true;
+                var gameRoom = JsonConvert.DeserializeObject<StartedGame>(await _redisHandler.GetFromCache($"Room:StartedGame:{groupName}"));
+                if (gameRoom.word.WordName == message)
+                {
+                    data.Answer = true;
+
+                    if (await _chatRepository.CountWhere(x => x.Answer == true && x.RoomName == groupName) == 0)
+                    {
+                        gameRoom.userList.FirstOrDefault(x => x.Username == username).GamePoint += 10;
+                        await Clients.Client(conId).SendAsync("DisableChat", true);
+
+                    }
+                    else if (await _chatRepository.CountWhere(x => x.Answer == true && x.RoomName == groupName) == 1)
+                    {
+                        gameRoom.userList.FirstOrDefault(x => x.Username == username).GamePoint += 8;
+                        await Clients.Client(conId).SendAsync("DisableChat", true);
+                    }
+                    else if (await _chatRepository.CountWhere(x => x.Answer == true && x.RoomName == groupName) == 2)
+                    {
+                        gameRoom.userList.FirstOrDefault(x => x.Username == username).GamePoint += 5;
+                        await Clients.Client(conId).SendAsync("DisableChat", true);
+                    }
+                    else if (await _chatRepository.CountWhere(x => x.Answer == true && x.RoomName == groupName) > 2)
+                    {
+                        gameRoom.userList.FirstOrDefault(x => x.Username == username).GamePoint += 3;
+                        await Clients.Client(conId).SendAsync("DisableChat", true);
+                    }
+
+                    await _redisHandler.RemoveFromCache($"Room:StartedGame:{groupName}");
+
+                    await _redisHandler.AddToCache($"Room:StartedGame:{groupName}", TimeSpan.FromMinutes(10), JsonConvert.SerializeObject(gameRoom));
+                }
             }
+
+            await _chatRepository.Add(data);
+
             await Clients.Group(groupName).SendAsync("GroupMessage", data);
 
         }
+
         public async Task<string> GetConnecionId()
         {
             return await Task.FromResult(Context.ConnectionId);
