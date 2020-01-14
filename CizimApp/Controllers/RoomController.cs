@@ -12,6 +12,7 @@ using CizimAppEntity.Models;
 using CizimAppData.Repository;
 using CizimAppData.Helpers;
 using CizimAppData;
+using System.Text;
 
 namespace CizimApp.Controllers
 {
@@ -481,6 +482,42 @@ namespace CizimApp.Controllers
             var randomWord = rnd.Next(0, wordCount);
             var data = await _wordRepository.GetAll();
             var word = data.ToList()[randomWord];
+            StringBuilder firstHint = new StringBuilder();
+
+            for (int i = 0; i < word.WordName.Length; i++)
+            {
+                firstHint.Append("_");
+            }
+
+            var secondHintNumber = rnd.Next(0, word.WordName.Length);
+            StringBuilder secondHint = new StringBuilder();
+            for (int i = 0; i < word.WordName.Length; i++)
+            {
+                if (i != secondHintNumber)
+                {
+                    secondHint.Append("_");
+                }
+                else
+                {
+                    secondHint.Append($"{word.WordName[secondHintNumber]} ");
+                }
+            }
+
+            var thirdHintNumber = rnd.Next(0, word.WordName.Length);
+            var thirdHint = secondHint.ToString();
+
+            if (thirdHint.ToString()[thirdHintNumber] != '_')
+            {
+                thirdHint.Remove(thirdHintNumber, 1);
+                thirdHint.Insert(thirdHintNumber, word.WordName[thirdHintNumber].ToString());
+
+            }
+            else
+            {//PROBLEM
+                thirdHintNumber = rnd.Next(0, word.WordName.Length);
+                thirdHint.Remove(thirdHintNumber, 1);
+                thirdHint.Insert(thirdHintNumber, word.WordName[thirdHintNumber].ToString());
+            }
 
             var roomPlayerList = JsonConvert.DeserializeObject<List<ConnectedUser>>(await _redisHandler.GetFromCache("Userlist:ConnectedUser")).Where(x => x.ConnectedRoomName == room.roomName).ToList();
             var shuffledList = ShuffleList(roomPlayerList);
@@ -488,11 +525,14 @@ namespace CizimApp.Controllers
             await _redisHandler.AddToCache($"Room:StartedGame:{room.roomName}", TimeSpan.FromMinutes(10), JsonConvert.SerializeObject(new StartedGame
             {
                 word = word,
+                firstHint = firstHint.ToString(),
+                secondHint = secondHint.ToString(),
+                thirdHint = thirdHint,
                 userList = shuffledList,
-                point = 120,
+                point = 30,
                 turn = 1
-            }));
-            await _hubContext.Clients.Group(room.roomName).SendAsync("GameTurn", new { wordName = word.WordName,turn=1});
+            })); 
+            await _hubContext.Clients.Group(room.roomName).SendAsync("GameTurn", new { wordName = word.WordName,turn=1,firstHint=firstHint.ToString(), secondHint = secondHint.ToString() });
             await _hubContext.Clients.Client(shuffledList[0].ConnectionId).SendAsync("YourTurn", true);
             await _hubContext.Clients.Group(room.roomName).SendAsync("StartTurnTimer", true);
 
@@ -514,7 +554,49 @@ namespace CizimApp.Controllers
             var wordList = await _wordRepository.GetAll();
             var word = wordList.ToList()[randomWord];
             data.word = word;
-            await _hubContext.Clients.Group(room.roomName).SendAsync("GameTurn", new { wordName = word.WordName, turn = data.turn });
+
+
+            StringBuilder firstHint = new StringBuilder();
+
+            for (int i = 0; i < word.WordName.Length; i++)
+            {
+                firstHint.Append("_");
+            }
+
+            var secondHintNumber = rnd.Next(0, word.WordName.Length);
+            StringBuilder secondHint = new StringBuilder();
+            for (int i = 0; i < word.WordName.Length; i++)
+            {
+                if (i != secondHintNumber)
+                {
+                    secondHint.Append("_");
+                }
+                else
+                {
+                    secondHint.Append($"{word.WordName[secondHintNumber]}");
+                }
+            }
+
+            var thirdHintNumber = rnd.Next(0, word.WordName.Length);
+            var thirdHint = secondHint.ToString();
+
+            if (thirdHint.ToString()[thirdHintNumber] == '_')
+            {
+                thirdHint.Remove(thirdHintNumber, 1);
+                thirdHint.Insert(thirdHintNumber, word.WordName[thirdHintNumber].ToString());
+
+            }
+            else
+            {
+                //PROBLEM
+                thirdHintNumber = rnd.Next(0, word.WordName.Length);
+                thirdHint.Remove(thirdHintNumber, 1);
+                thirdHint.Insert(thirdHintNumber, word.WordName[thirdHintNumber].ToString());
+            }
+
+            data.firstHint = firstHint.ToString();
+            data.secondHint = secondHint.ToString();
+            await _hubContext.Clients.Group(room.roomName).SendAsync("GameTurn", new { wordName = word.WordName, turn = data.turn, firstHint = firstHint.ToString(), secondHint = secondHint.ToString() , thirdHint });
             await _hubContext.Clients.Client(psuedoPlayer.ConnectionId).SendAsync("YourTurn", false);
             await _hubContext.Clients.Client(data.userList[0].ConnectionId).SendAsync("YourTurn", true);
             await _hubContext.Clients.Group(room.roomName).SendAsync("StartTurnTimer", true);
@@ -522,8 +604,24 @@ namespace CizimApp.Controllers
 
             await _redisHandler.RemoveFromCache($"Room:StartedGame:{room.roomName}");
 
+
+            foreach (var item in data.userList)
+            {
+                if (item.GamePoint >= data.point)
+                {
+
+                    await _hubContext.Clients.Group(room.roomName).SendAsync("GameEnd", new { 
+                        username=item.Username,
+                        point=item.GamePoint,
+                    });
+                }
+            }
+
             await _redisHandler.AddToCache($"Room:StartedGame:{room.roomName}", TimeSpan.FromMinutes(10), JsonConvert.SerializeObject(data));
+
             await _hubContext.Clients.Group(room.roomName).SendAsync("DisableChat", false);
+
+            
 
             return await Task.FromResult(Ok(data.userList[0]));
         }

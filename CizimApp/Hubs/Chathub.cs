@@ -53,10 +53,17 @@ namespace CizimApp.Hubs
 
         public async Task GetAllChatMessage(string groupName)
         {
-            //var data = await _context.Chats.AsNoTracking().Where(x => x.RoomName == groupName).ToArrayAsync();
+            
             var data = await _chatRepository.GetWhere(x => x.RoomName == groupName);
             await Clients.Group(groupName).SendAsync("RoomMessage", data);
         }
+
+        public async Task GiveHint(int hint,string groupName)
+        {
+            
+            await Clients.Group(groupName).SendAsync("ReceivedHint", hint);
+        }
+
 
 
 
@@ -79,6 +86,7 @@ namespace CizimApp.Hubs
 
                     if (await _chatRepository.CountWhere(x => x.Answer == true && x.RoomName == groupName) == 0)
                     {
+                        
                         gameRoom.userList.FirstOrDefault(x => x.Username == username).GamePoint += 10;
                         await Clients.Client(conId).SendAsync("DisableChat", true);
 
@@ -98,6 +106,7 @@ namespace CizimApp.Hubs
                         gameRoom.userList.FirstOrDefault(x => x.Username == username).GamePoint += 3;
                         await Clients.Client(conId).SendAsync("DisableChat", true);
                     }
+                    gameRoom.userList[0].GamePoint += 2;
 
                     await _redisHandler.RemoveFromCache($"Room:StartedGame:{groupName}");
 
