@@ -54,6 +54,7 @@ namespace CizimApp
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IWordRepository, WordRepository>();
             services.AddScoped<IConnectedUserRepository, ConnectedUserRepository>();
             services.AddScoped<IRedisHandler, RedisHandler>();
 

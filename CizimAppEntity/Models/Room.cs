@@ -14,6 +14,8 @@ namespace CizimAppEntity.Models
         public string roomName { get; set; }
         public int roomUserCount { get; set; }
         public int roomMaxUserCount { get; set; }
+        public int roomPoint { get; set; }
+        public bool roomIsGameStart { get; set; }
         public string roomPassword { get; set; }
         public string roomAdmin { get; set; }
         public DateTime CreationDate { get; set; }

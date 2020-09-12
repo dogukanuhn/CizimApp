@@ -13,6 +13,8 @@ namespace CizimAppEntity.Models
         public string RoomName { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }
+        public bool Answer { get; set; }
+
         public DateTime Date { get; set; }
 
 
